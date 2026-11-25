@@ -84,6 +84,7 @@ public void initialize (Box metrics_box, Box extras_box, Box performance_box, Bo
                                 state.inform_switches, state.inform_labels,
                                 state.inform_config_vars, app.labels.inform_label_texts,
                                 app.labels.inform_label_texts_2);
+    create_reset_fps_metrics_field (performance_box);
     create_limiters_and_filters (performance_box);
     add_switch_handler (state.gpu_switches);
     add_switch_handler (state.cpu_switches);
@@ -362,6 +363,56 @@ public void create_switches_and_labels (Box parent_box, string page_id, string t
     }
 
     parent_box.append (flow_box);
+}
+
+void create_reset_fps_metrics_field (Box performance_box) {
+    unowned State state = app.state;
+
+    var text_box = new Box (Orientation.VERTICAL, 0);
+    text_box.valign = Align.CENTER;
+    text_box.halign = Align.START;
+
+    var title = new Label (null);
+    title.set_markup ("<b>%s</b>".printf (_ ("Reset FPS metrics")));
+    title.halign = Align.START;
+
+    var subtitle = new Label (null);
+    subtitle.set_markup ("<span size='8500'>%s</span>".printf (_ ("Average, 1% and 0.1% lows")));
+    subtitle.halign = Align.START;
+    subtitle.add_css_class ("dim-label");
+
+    text_box.append (title);
+    text_box.append (subtitle);
+
+    state.reset_fps_metrics_recorder = new ShortcutRecorder () {
+        tooltip_text = _ ("Click to record the reset FPS metrics shortcut"),
+        hexpand = true,
+        shortcut = "Shift_R+F9"
+    };
+
+    var key_controller = new Gtk.EventControllerKey ();
+    key_controller.key_pressed.connect ((keyval, keycode, mod_state) => {
+        if (state.reset_fps_metrics_recorder.is_recording) {
+            return state.reset_fps_metrics_recorder.handle_key_event_with_code (keyval, 0, mod_state);
+        }
+        return false;
+    });
+    state.reset_fps_metrics_recorder.add_controller (key_controller);
+    state.reset_fps_metrics_recorder.shortcut_changed.connect (() => {
+        app.save_config ();
+    });
+
+    var row = new Box (Orientation.HORIZONTAL, Common.MAIN_BOX_SPACING);
+    row.margin_start = Common.FLOW_BOX_MARGIN;
+    row.margin_end = Common.FLOW_BOX_MARGIN;
+    row.margin_bottom = Common.FLOW_BOX_MARGIN;
+    row.append (text_box);
+    row.append (state.reset_fps_metrics_recorder);
+    performance_box.append (row);
+
+    app.search.add_setting ("performance_box", Common.INFORM_TITLE, _ ("Reset FPS metrics"),
+                            _ ("Average, 1% and 0.1% lows"), new string[] { "reset_fps_metrics" },
+                            state.reset_fps_metrics_recorder, row);
 }
 
 public void create_scales_and_labels (Box parent_box) {

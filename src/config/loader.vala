@@ -104,6 +104,11 @@ public class Loader : GLib.Object {
             if (app.toggle_fps_limit_recorder != null)
                 app.toggle_fps_limit_recorder.shortcut = val;
         });
+        add_loader ("reset_fps_metrics=", (app, line) => {
+            var val = line.substring ("reset_fps_metrics=".length).strip ();
+            if (app.reset_fps_metrics_recorder != null)
+                app.reset_fps_metrics_recorder.shortcut = val;
+        });
         add_loader ("output_folder=", (app, line) => {
             app.custom_logs_path_entry.text = line.substring ("output_folder=".length);
         });

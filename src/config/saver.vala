@@ -481,6 +481,7 @@ public class Saver : GLib.Object {
             write_kv_line (data_stream, kv, "output_folder");
             write_kv_line (data_stream, kv, "fps_limit_method");
             write_kv_line (data_stream, kv, "toggle_fps_limit");
+            write_kv_line (data_stream, kv, "reset_fps_metrics");
             write_kv_line (data_stream, kv, "fps_limit");
             write_kv_line (data_stream, kv, "vsync");
             write_kv_line (data_stream, kv, "gl_vsync");
@@ -772,6 +773,9 @@ public class Saver : GLib.Object {
 
         if (mango_juice.toggle_fps_limit_recorder != null && mango_juice.toggle_fps_limit_recorder.shortcut != null) {
             maybe_add_kv (kv, "toggle_fps_limit", mango_juice.toggle_fps_limit_recorder.shortcut);
+        }
+        if (mango_juice.reset_fps_metrics_recorder != null && mango_juice.reset_fps_metrics_recorder.shortcut != null) {
+            maybe_add_kv (kv, "reset_fps_metrics", mango_juice.reset_fps_metrics_recorder.shortcut);
         }
 
         var fps_limits = mango_juice.joined_fps_limits ();

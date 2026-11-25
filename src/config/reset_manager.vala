@@ -12,6 +12,7 @@ public class ResetManager {
     const string DEFAULT_TOGGLE_HUD_SHORTCUT = "Shift_R+F11";
     const string DEFAULT_TOGGLE_POSIC_SHORTCUT = "Shift_R+F12";
     const string DEFAULT_TOGGLE_FPS_LIMIT_SHORTCUT = "Shift_L+F1";
+    const string DEFAULT_RESET_FPS_METRICS_SHORTCUT = "Shift_R+F9";
     const string DEFAULT_LOGS_SHORTCUT = "Shift_L+F2";
 
     public ResetManager (State state) {
@@ -64,6 +65,10 @@ public class ResetManager {
 
         if (state.toggle_fps_limit_recorder != null) {
             state.toggle_fps_limit_recorder.shortcut = DEFAULT_TOGGLE_FPS_LIMIT_SHORTCUT;
+        }
+
+        if (state.reset_fps_metrics_recorder != null) {
+            state.reset_fps_metrics_recorder.shortcut = DEFAULT_RESET_FPS_METRICS_SHORTCUT;
         }
 
         if (state.logs_key_recorder != null) {

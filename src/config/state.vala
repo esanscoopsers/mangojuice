@@ -114,6 +114,7 @@ public class State : GLib.Object {
     public ShortcutRecorder toggle_posic;
     public ShortcutRecorder toggle_hud_key_recorder;
     public ShortcutRecorder toggle_fps_limit_recorder;
+    public ShortcutRecorder reset_fps_metrics_recorder;
     public ShortcutRecorder logs_key_recorder;
     public bool is_loading = false;
     public bool custom_order_changed { get; set; default = false; }
