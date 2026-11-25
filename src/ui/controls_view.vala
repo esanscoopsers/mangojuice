@@ -10,7 +10,7 @@ namespace MangoJuice.UI {
 public class ControlsView : GLib.Object {
 
 private MangoJuice.Application app { get; private set; }
-private FlowBox fps_limits_flow;
+private Box fps_limits_rows;
 private Button add_fps_limit_button;
 private const int DEFAULT_FPS_LIMIT_SLOTS = 3;
 
@@ -451,26 +451,27 @@ public void create_limiters_and_filters (Box performance_box) {
     limiters_box.append (toggle_fps_limit_box);
     performance_box.append (limiters_box);
 
-    fps_limits_flow = new FlowBox ();
-    fps_limits_flow.set_max_children_per_line (4);
-    fps_limits_flow.set_homogeneous (false);
-    fps_limits_flow.set_column_spacing (Common.FLOW_BOX_COLUMN_SPACING);
-    fps_limits_flow.set_row_spacing (Common.FLOW_BOX_ROW_SPACING);
-    fps_limits_flow.set_margin_start (Common.FLOW_BOX_MARGIN);
-    fps_limits_flow.set_margin_end (Common.FLOW_BOX_MARGIN);
-    fps_limits_flow.set_margin_top (0);
-    fps_limits_flow.set_margin_bottom (Common.FLOW_BOX_MARGIN);
-    fps_limits_flow.set_selection_mode (SelectionMode.NONE);
-    performance_box.append (fps_limits_flow);
+    fps_limits_rows = new Box (Orientation.VERTICAL, 6);
+    fps_limits_rows.margin_start = Common.FLOW_BOX_MARGIN;
+    fps_limits_rows.margin_end = Common.FLOW_BOX_MARGIN;
+    fps_limits_rows.margin_top = 0;
+    fps_limits_rows.margin_bottom = 0;
 
     add_fps_limit_button = new Button.with_label ("+");
     add_fps_limit_button.tooltip_text = _ ("Add FPS limit");
     add_fps_limit_button.valign = Align.CENTER;
     add_fps_limit_button.halign = Align.START;
+    add_fps_limit_button.margin_start = Common.FLOW_BOX_MARGIN;
+    add_fps_limit_button.margin_bottom = Common.FLOW_BOX_MARGIN;
     add_fps_limit_button.add_css_class ("flat");
     add_fps_limit_button.clicked.connect (() => {
         append_fps_limit_entry ("");
     });
+
+    var fps_limits_section = new Box (Orientation.VERTICAL, 6);
+    fps_limits_section.append (fps_limits_rows);
+    fps_limits_section.append (add_fps_limit_button);
+    performance_box.append (fps_limits_section);
 
     state.apply_fps_limits = (values, persist) => {
         replace_fps_limit_entries (values, persist);
@@ -482,7 +483,7 @@ public void create_limiters_and_filters (Box performance_box) {
                             state.fps_limit_method, state.fps_limit_method);
     app.search.add_setting ("performance_box", _ ("Limiters FPS"), _ ("FPS limits"),
                             _ ("Comma-separated caps, use + to add more"), new string[] { "fps_limit" },
-                            add_fps_limit_button, fps_limits_flow);
+                            add_fps_limit_button, fps_limits_rows);
     app.search.add_setting ("performance_box", _ ("Limiters FPS"), _ ("Toggle FPS limit"),
                             _ ("Keyboard shortcut"), new string[] { "toggle_fps_limit" },
                             state.toggle_fps_limit_recorder, toggle_fps_limit_box);
@@ -661,10 +662,6 @@ void replace_fps_limit_entries (string[] values, bool persist) {
     }
     state.fps_limit_entries.clear ();
 
-    if (add_fps_limit_button.parent != null) {
-        remove_flow_child (add_fps_limit_button);
-    }
-
     int slots = values.length;
     if (slots < DEFAULT_FPS_LIMIT_SLOTS) slots = DEFAULT_FPS_LIMIT_SLOTS;
 
@@ -684,14 +681,9 @@ void replace_fps_limit_entries (string[] values, bool persist) {
 void append_fps_limit_entry (string text) {
     unowned State state = app.state;
 
-    if (add_fps_limit_button.parent != null) {
-        remove_flow_child (add_fps_limit_button);
-    }
-
     var entry = new Entry ();
     entry.input_purpose = InputPurpose.NUMBER;
     entry.hexpand = true;
-    entry.width_request = 120;
 
     int index = state.fps_limit_entries.size + 1;
     var row = Common.create_entry_with_clear_button (entry, _ ("Limit %d").printf (index), "");
@@ -715,8 +707,7 @@ void append_fps_limit_entry (string text) {
     });
 
     state.fps_limit_entries.add (entry);
-    fps_limits_flow.append (row);
-    fps_limits_flow.append (add_fps_limit_button);
+    fps_limits_rows.append (row);
     refresh_fps_limit_rows ();
 }
 
@@ -738,17 +729,8 @@ void remove_fps_limit_entry (Entry entry) {
 
 void remove_fps_limit_row (Entry entry) {
     var row = entry.parent;
-    if (row != null) {
-        remove_flow_child (row);
-    }
-}
-
-void remove_flow_child (Widget widget) {
-    var parent = widget.parent;
-    if (parent is FlowBoxChild) {
-        fps_limits_flow.remove (parent);
-    } else if (parent == fps_limits_flow) {
-        fps_limits_flow.remove (widget);
+    if (row != null && row.parent == fps_limits_rows) {
+        fps_limits_rows.remove (row);
     }
 }
 
