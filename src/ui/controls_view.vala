@@ -13,7 +13,7 @@ private MangoJuice.Application app { get; private set; }
 private FlowBox fps_limits_flow;
 private Button add_fps_limit_button;
 private const int DEFAULT_FPS_LIMIT_SLOTS = 3;
-private const int FPS_LIMIT_ENTRY_WIDTH = 72;
+private bool fps_limit_css_installed;
 
 public ControlsView (MangoJuice.Application app) {
     this.app = app;
@@ -462,6 +462,7 @@ public void create_limiters_and_filters (Box performance_box) {
     fps_limits_flow.set_halign (Align.START);
     fps_limits_flow.margin_start = Common.FLOW_BOX_MARGIN;
     fps_limits_flow.margin_end = Common.FLOW_BOX_MARGIN;
+    install_fps_limit_css ();
 
     add_fps_limit_button = new Button.with_label ("+");
     add_fps_limit_button.tooltip_text = _ ("Add FPS limit");
@@ -655,6 +656,20 @@ public void create_limiters_and_filters (Box performance_box) {
                             state.fps_sampling_period_scale, fps_sampling_period_widget.widget);
 }
 
+void install_fps_limit_css () {
+    if (fps_limit_css_installed) return;
+    fps_limit_css_installed = true;
+    var provider = new CssProvider ();
+    provider.load_from_string ("""
+        entry.fps-limit {
+            min-width: 0;
+        }
+    """);
+    var display = Gdk.Display.get_default ();
+    if (display == null) return;
+    StyleContext.add_provider_for_display (display, provider, STYLE_PROVIDER_PRIORITY_APPLICATION);
+}
+
 void replace_fps_limit_entries (string[] values, bool persist) {
     unowned State state = app.state;
     state.rebuilding_fps_limits = true;
@@ -690,18 +705,24 @@ void append_fps_limit_entry (string text) {
     var entry = new Entry ();
     entry.input_purpose = InputPurpose.NUMBER;
     entry.hexpand = false;
-    entry.width_chars = 4;
-    entry.set_size_request (FPS_LIMIT_ENTRY_WIDTH, -1);
+    entry.halign = Align.START;
+    entry.width_chars = 3;
+    entry.max_width_chars = 3;
+    entry.add_css_class ("fps-limit");
 
     int index = state.fps_limit_entries.size + 1;
     var row = Common.create_entry_with_clear_button (entry, "%d".printf (index), "");
     entry.hexpand = false;
+    entry.halign = Align.START;
+    entry.width_chars = 3;
+    entry.max_width_chars = 3;
     entry.placeholder_text = "%d".printf (index);
     entry.tooltip_text = _ ("FPS limit %d").printf (index);
     row.hexpand = false;
     row.halign = Align.START;
     entry.text = text;
-    app.validate_numeric_entry (entry, 0, 1000);
+    app.validate_numeric_entry (entry, 0, 999);
+    entry.max_length = 3;
 
     var remove_button = new Button.with_label ("−");
     remove_button.tooltip_text = _ ("Remove FPS limit");
@@ -761,7 +782,10 @@ void refresh_fps_limit_rows () {
         entry.placeholder_text = "%d".printf (i + 1);
         entry.tooltip_text = _ ("FPS limit %d").printf (i + 1);
         entry.hexpand = false;
-        entry.set_size_request (FPS_LIMIT_ENTRY_WIDTH, -1);
+        entry.halign = Align.START;
+        entry.width_chars = 3;
+        entry.max_width_chars = 3;
+        entry.max_length = 3;
     }
 }
 
