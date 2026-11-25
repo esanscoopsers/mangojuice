@@ -456,8 +456,8 @@ public void create_limiters_and_filters (Box performance_box) {
     fps_limits_wrap.hexpand = true;
     fps_limits_wrap.halign = Align.FILL;
     fps_limits_wrap.align = 0;
-    fps_limits_wrap.justify = Adw.JustifyMode.NONE;
-    fps_limits_wrap.justify_last_line = false;
+    fps_limits_wrap.justify = Adw.JustifyMode.SPREAD;
+    fps_limits_wrap.justify_last_line = true;
     fps_limits_wrap.wrap_policy = Adw.WrapPolicy.NATURAL;
     fps_limits_wrap.child_spacing = 6;
     fps_limits_wrap.line_spacing = 6;
@@ -664,6 +664,12 @@ void install_fps_limit_css () {
     provider.load_from_string ("""
         entry.fps-limit {
             min-width: 0;
+            padding-right: 4px;
+        }
+        button.fps-limit-remove {
+            min-width: 0;
+            padding: 0 2px;
+            margin-left: -6px;
         }
     """);
     var display = Gdk.Display.get_default ();
@@ -728,8 +734,9 @@ void append_fps_limit_entry (string text) {
     var remove_button = new Button.with_label ("−");
     remove_button.tooltip_text = _ ("Remove FPS limit");
     remove_button.valign = Align.CENTER;
-    remove_button.halign = Align.CENTER;
+    remove_button.halign = Align.START;
     remove_button.add_css_class ("flat");
+    remove_button.add_css_class ("fps-limit-remove");
     row.append (remove_button);
 
     entry.changed.connect (() => {
