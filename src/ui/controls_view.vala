@@ -10,7 +10,7 @@ namespace MangoJuice.UI {
 public class ControlsView : GLib.Object {
 
 private MangoJuice.Application app { get; private set; }
-private FlowBox fps_limits_flow;
+private Adw.WrapBox fps_limits_wrap;
 private Button add_fps_limit_button;
 private const int DEFAULT_FPS_LIMIT_SLOTS = 3;
 private bool fps_limit_css_installed;
@@ -452,16 +452,17 @@ public void create_limiters_and_filters (Box performance_box) {
     limiters_box.append (toggle_fps_limit_box);
     performance_box.append (limiters_box);
 
-    fps_limits_flow = new FlowBox ();
-    fps_limits_flow.set_homogeneous (false);
-    fps_limits_flow.set_min_children_per_line (1);
-    fps_limits_flow.set_max_children_per_line (12);
-    fps_limits_flow.set_column_spacing (6);
-    fps_limits_flow.set_row_spacing (6);
-    fps_limits_flow.set_selection_mode (SelectionMode.NONE);
-    fps_limits_flow.set_halign (Align.START);
-    fps_limits_flow.margin_start = Common.FLOW_BOX_MARGIN;
-    fps_limits_flow.margin_end = Common.FLOW_BOX_MARGIN;
+    fps_limits_wrap = new Adw.WrapBox ();
+    fps_limits_wrap.hexpand = true;
+    fps_limits_wrap.halign = Align.FILL;
+    fps_limits_wrap.align = 0;
+    fps_limits_wrap.justify = Adw.JustifyMode.NONE;
+    fps_limits_wrap.justify_last_line = false;
+    fps_limits_wrap.wrap_policy = Adw.WrapPolicy.NATURAL;
+    fps_limits_wrap.child_spacing = 6;
+    fps_limits_wrap.line_spacing = 6;
+    fps_limits_wrap.margin_start = Common.FLOW_BOX_MARGIN;
+    fps_limits_wrap.margin_end = Common.FLOW_BOX_MARGIN;
     install_fps_limit_css ();
 
     add_fps_limit_button = new Button.with_label ("+");
@@ -476,7 +477,7 @@ public void create_limiters_and_filters (Box performance_box) {
     });
 
     var fps_limits_section = new Box (Orientation.VERTICAL, 6);
-    fps_limits_section.append (fps_limits_flow);
+    fps_limits_section.append (fps_limits_wrap);
     fps_limits_section.append (add_fps_limit_button);
     performance_box.append (fps_limits_section);
 
@@ -490,7 +491,7 @@ public void create_limiters_and_filters (Box performance_box) {
                             state.fps_limit_method, state.fps_limit_method);
     app.search.add_setting ("performance_box", _ ("Limiters FPS"), _ ("FPS limits"),
                             _ ("Comma-separated caps, use + to add more"), new string[] { "fps_limit" },
-                            add_fps_limit_button, fps_limits_flow);
+                            add_fps_limit_button, fps_limits_wrap);
     app.search.add_setting ("performance_box", _ ("Limiters FPS"), _ ("Toggle FPS limit"),
                             _ ("Keyboard shortcut"), new string[] { "toggle_fps_limit" },
                             state.toggle_fps_limit_recorder, toggle_fps_limit_box);
@@ -702,7 +703,7 @@ void replace_fps_limit_entries (string[] values, bool persist) {
 void append_fps_limit_entry (string text) {
     unowned State state = app.state;
 
-    var entry = new Entry ();
+    var entry = new FpsLimitEntry ();
     entry.input_purpose = InputPurpose.NUMBER;
     entry.hexpand = false;
     entry.halign = Align.START;
@@ -742,12 +743,7 @@ void append_fps_limit_entry (string text) {
     });
 
     state.fps_limit_entries.add (entry);
-    fps_limits_flow.append (row);
-    var wrapper = row.parent;
-    if (wrapper != null) {
-        wrapper.hexpand = false;
-        wrapper.halign = Align.START;
-    }
+    fps_limits_wrap.append (row);
     refresh_fps_limit_rows ();
 }
 
@@ -768,10 +764,8 @@ void remove_fps_limit_entry (Entry entry) {
 
 void remove_fps_limit_row (Entry entry) {
     var row = entry.parent;
-    if (row == null) return;
-    var wrapper = row.parent;
-    if (wrapper is FlowBoxChild && wrapper.parent == fps_limits_flow) {
-        fps_limits_flow.remove (wrapper);
+    if (row != null && row.parent == fps_limits_wrap) {
+        fps_limits_wrap.remove (row);
     }
 }
 
@@ -786,6 +780,22 @@ void refresh_fps_limit_rows () {
         entry.width_chars = 3;
         entry.max_width_chars = 3;
         entry.max_length = 3;
+    }
+}
+
+private class FpsLimitEntry : Entry {
+    public override void measure (Orientation orientation, int for_size,
+                                  out int minimum, out int natural,
+                                  out int minimum_baseline, out int natural_baseline) {
+        base.measure (orientation, for_size, out minimum, out natural,
+                      out minimum_baseline, out natural_baseline);
+        if (orientation != Orientation.HORIZONTAL) return;
+
+        int text_width, text_height;
+        create_pango_layout ("999").get_pixel_size (out text_width, out text_height);
+        int width = text_width + 24;
+        minimum = width;
+        natural = width;
     }
 }
 
