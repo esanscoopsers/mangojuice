@@ -5,6 +5,8 @@ using MangoJuice.UI;
 
 namespace MangoJuice.Config {
 
+public delegate void ApplyFpsLimitsFunc (string[] values, bool persist);
+
 public class State : GLib.Object {
 
     // UI Elements
@@ -48,9 +50,9 @@ public class State : GLib.Object {
     public Entry picmip_entry;
     public Entry af_entry;
     public Entry fps_sampling_period_entry;
-    public Entry fps_limit_entry_1;
-    public Entry fps_limit_entry_2;
-    public Entry fps_limit_entry_3;
+    public Gee.ArrayList<Entry> fps_limit_entries = new Gee.ArrayList<Entry> ();
+    public bool rebuilding_fps_limits = false;
+    public ApplyFpsLimitsFunc? apply_fps_limits;
     public Entry custom_text_center_entry;
     public Switch custom_switch;
     public Scale borders_scale;
@@ -257,6 +259,28 @@ public class State : GLib.Object {
 
     public string rgba_to_hex (Gdk.RGBA rgba) {
         return "%02x%02x%02x".printf ((int) (rgba.red * 255), (int) (rgba.green * 255), (int) (rgba.blue * 255));
+    }
+
+    public string joined_fps_limits () {
+        var parts = new Gee.ArrayList<string> ();
+        foreach (var entry in fps_limit_entries) {
+            if (entry == null) continue;
+            var text = entry.text.strip ();
+            if (text != "") parts.add (text);
+        }
+        if (parts.size == 0) return "";
+        return string.joinv (",", (string[]) parts.to_array ());
+    }
+
+    public void apply_fps_limit_config (string raw, bool persist) {
+        var parts = new Gee.ArrayList<string> ();
+        foreach (var part in raw.split (",")) {
+            var text = part.strip ();
+            if (text != "") parts.add (text);
+        }
+        if (apply_fps_limits != null) {
+            apply_fps_limits (parts.to_array (), persist);
+        }
     }
 
 }

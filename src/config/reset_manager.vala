@@ -86,9 +86,13 @@ public class ResetManager {
         if (state.gpu_load_value_entry_2 != null) state.gpu_load_value_entry_2.text = "";
         if (state.cpu_load_value_entry_1 != null) state.cpu_load_value_entry_1.text = "";
         if (state.cpu_load_value_entry_2 != null) state.cpu_load_value_entry_2.text = "";
-        if (state.fps_limit_entry_1 != null) state.fps_limit_entry_1.text = "";
-        if (state.fps_limit_entry_2 != null) state.fps_limit_entry_2.text = "";
-        if (state.fps_limit_entry_3 != null) state.fps_limit_entry_3.text = "";
+        if (state.apply_fps_limits != null) {
+            state.apply_fps_limit_config ("", true);
+        } else if (state.fps_limit_entries != null) {
+            foreach (var entry in state.fps_limit_entries) {
+                if (entry != null) entry.text = "";
+            }
+        }
         if (state.toggle_hud_entry != null) state.toggle_hud_entry.text = "";
     }
 

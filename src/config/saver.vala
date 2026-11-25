@@ -46,8 +46,16 @@ public class Saver : GLib.Object {
         update_file ("pci_dev=", pci_dev_value);
     }
 
-    public void update_fps_limit_in_file (string fps_limit_1, string fps_limit_2, string fps_limit_3) {
-        update_file ("fps_limit=", "%s,%s,%s".printf (fps_limit_1, fps_limit_2, fps_limit_3));
+    public void update_fps_limit_in_file (string fps_limits) {
+        if (fps_limits == "") {
+            update_file_mutex.lock ();
+            if (pending_updates != null) {
+                pending_updates.unset ("fps_limit=");
+            }
+            update_file_mutex.unlock ();
+            return;
+        }
+        update_file ("fps_limit=", fps_limits);
     }
 
     public void update_fps_sampling_period_in_file (string fps_sampling_period_value) {
@@ -766,11 +774,9 @@ public class Saver : GLib.Object {
             maybe_add_kv (kv, "toggle_fps_limit", mango_juice.toggle_fps_limit_recorder.shortcut);
         }
 
-        var fps_limit_1 = mango_juice.fps_limit_entry_1.text;
-        var fps_limit_2 = mango_juice.fps_limit_entry_2.text;
-        var fps_limit_3 = mango_juice.fps_limit_entry_3.text;
-        if (fps_limit_1 != "" || fps_limit_2 != "" || fps_limit_3 != "") {
-            kv["fps_limit"] = "%s,%s,%s".printf (fps_limit_1, fps_limit_2, fps_limit_3);
+        var fps_limits = mango_juice.joined_fps_limits ();
+        if (fps_limits != "") {
+            kv["fps_limit"] = fps_limits;
         }
 
         if (mango_juice.vulkan_dropdown.selected_item != null) {

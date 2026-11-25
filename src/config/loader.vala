@@ -164,12 +164,7 @@ public class Loader : GLib.Object {
         add_color_loader ("horizontal_separator_color=", (app) => app.horizontal_separator_color_button);
 
         add_loader ("fps_limit=", (app, line) => {
-            var parts = line.substring ("fps_limit=".length).split (",");
-            if (parts.length == 3) {
-                app.fps_limit_entry_1.text = parts[0];
-                app.fps_limit_entry_2.text = parts[1];
-                app.fps_limit_entry_3.text = parts[2];
-            }
+            app.apply_fps_limit_config (line.substring ("fps_limit=".length), false);
         });
         add_loader ("fps_value=", (app, line) => {
             var parts = line.substring ("fps_value=".length).split (",");

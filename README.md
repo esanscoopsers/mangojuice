@@ -12,6 +12,11 @@
 
 ### This program will be a convenient alternative to GOverlay for setting up MangoHud
 
+### This fork
+
+FPS limit presets are not capped at three. On the Performance page, under Limiters FPS, press **+** to add another limit and **−** to remove extras. Values are saved as one `fps_limit=` line (`0,30,60,120,...`). Empty fields are left out, so saving no longer truncates a longer list back to three slots.
+
+
 <p align="center">
     <img src="https://github.com/radiolamp/mangojuice-donate/blob/main/images/screen1.png?raw=true" alt="Screenshot"/>
 </p>
