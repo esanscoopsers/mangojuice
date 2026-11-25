@@ -13,7 +13,6 @@ private MangoJuice.Application app { get; private set; }
 private FlowBox fps_limits_flow;
 private Button add_fps_limit_button;
 private const int DEFAULT_FPS_LIMIT_SLOTS = 3;
-private const int MAX_FPS_LIMIT_SLOTS = 16;
 
 public ControlsView (MangoJuice.Application app) {
     this.app = app;
@@ -470,7 +469,6 @@ public void create_limiters_and_filters (Box performance_box) {
     add_fps_limit_button.halign = Align.START;
     add_fps_limit_button.add_css_class ("flat");
     add_fps_limit_button.clicked.connect (() => {
-        if (state.fps_limit_entries.size >= MAX_FPS_LIMIT_SLOTS) return;
         append_fps_limit_entry ("");
     });
 
@@ -766,7 +764,6 @@ void refresh_fps_limit_rows () {
             remove_button.visible = i >= DEFAULT_FPS_LIMIT_SLOTS;
         }
     }
-    add_fps_limit_button.sensitive = state.fps_limit_entries.size < MAX_FPS_LIMIT_SLOTS;
 }
 
 }
